@@ -1776,8 +1776,26 @@ function viewSetup(v){
   // account
   const acc=el('div',{class:'card'}, el('h2',{},'Account'),
     el('p',{class:'muted'}, Auth.userId?'Signed in and syncing.':'Offline on this device. Add Supabase keys to sync across devices.'),
-    el('button',{class:'btn ghost',onclick:()=>Auth.signOut()}, Auth.userId?'Sign out':'Reset this device'));
+    el('button',{class:'btn ghost',onclick:()=>Auth.signOut()}, Auth.userId?'Sign out':'Reset this device'),
+    el('button',{class:'btn ghost',style:'margin-top:8px;color:var(--bad);border-color:var(--bad)',onclick:confirmReset},'Reset all data'));
   v.append(acc);
+}
+function confirmReset(){
+  openSheet('Reset everything', s=>{
+    s.append(el('p',{class:'muted'},'This permanently deletes all your data, both on this device and in the cloud, and starts you completely fresh. It cannot be undone.'));
+    s.append(el('button',{class:'btn',style:'background:var(--bad);margin-top:8px',onclick:resetEverything},'Delete everything and start over'));
+    s.append(el('button',{class:'btn ghost',style:'margin-top:8px',onclick:closeSheet},'Cancel'));
+  });
+}
+async function resetEverything(){
+  closeSheet(); toast('Resetting...');
+  if(Sync.sb && Auth.userId){
+    for(const t of TABLES){ try{ await Sync.sb.from(t).delete().eq('user_id',Auth.userId); }catch(e){} }
+  }
+  TABLES.forEach(t=>{ Store.cache[t]=[]; Store.persist(t); });
+  Store.outbox=[]; Store.persistOutbox();
+  LS.set('jcpos.lastPull','1970-01-01T00:00:00Z');
+  location.reload();
 }
 function field(label,id,val){ return el('div',{class:'field'}, el('label',{},label), el('input',{id,type:'number',inputmode:'decimal',value:val||''})); }
 function toPence(str){ if(str==null)return null; const n=parseFloat(str); return isNaN(n)?null:Math.round(n*100); }
