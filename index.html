@@ -1883,13 +1883,20 @@ function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('sh
 /* =========================================================================
    BOOT
    ========================================================================= */
-function showApp(){
+async function showApp(){
   $('#auth').classList.add('hide'); $('#app').classList.remove('hide'); $('#nav').classList.remove('hide');
+  // pull existing cloud data BEFORE rendering or seeding, so we never show an empty app
+  // (which made you re-enter) and never seed duplicate categories on top of synced ones
+  if(Auth.userId){
+    Sync.setStatus('syncing');
+    $('#view').innerHTML='<div class="muted center" style="padding:64px 0">Loading your data...</div>';
+    try{ await Auth.backfillAndSync(); }catch(e){}
+  } else {
+    Sync.setStatus('local');
+  }
   Finance.seedCats();
   Finance.ensureRecurringPosted();
-  Sync.setStatus(Sync.sb?(Auth.userId?'syncing':'local'):'local');
   App.render();
-  if(Auth.userId) Auth.backfillAndSync();
 }
 function showAuth(){
   $('#app').classList.add('hide'); $('#nav').classList.add('hide'); $('#auth').classList.remove('hide');
@@ -1906,12 +1913,12 @@ async function boot(){
   $$('#nav button[data-nav]').forEach(b=>b.addEventListener('click',()=>App.go(b.dataset.nav)));
 
   // auth handlers
-  $('#au-login').addEventListener('click',async()=>{ try{ await Auth.signIn($('#au-email').value.trim(),$('#au-pass').value); showApp(); }catch(e){ $('#au-err').textContent=e.message; } });
+  $('#au-login').addEventListener('click',async()=>{ try{ await Auth.signIn($('#au-email').value.trim(),$('#au-pass').value); await showApp(); }catch(e){ $('#au-err').textContent=e.message; } });
   $('#au-signup').addEventListener('click',async()=>{ try{ await Auth.signUp($('#au-email').value.trim(),$('#au-pass').value); $('#au-err').textContent='Account created. Now sign in.'; }catch(e){ $('#au-err').textContent=e.message; } });
   $('#au-offline').addEventListener('click',()=>{ LS.set('jcpos.offline',true); Auth.userId=null; showApp(); });
 
   const ok=await Auth.init();
-  if(ok){ showApp(); if(Auth.userId) Sync.full(); } else { showAuth(); }
+  if(ok){ await showApp(); } else { showAuth(); }
 
   // register service worker for installable PWA / offline shell
   if('serviceWorker' in navigator){ try{ await navigator.serviceWorker.register('JCPOS_sw.js'); }catch(e){} }
