@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
-<meta name="theme-color" content="#F7F6F2" />
+<meta name="theme-color" content="#121410" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Hanken+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
@@ -12,22 +12,22 @@
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="mobile-web-app-capable" content="yes" />
-<meta name="apple-mobile-web-app-status-bar-style" content="default" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="JCPOS" />
 <title>JCPOS</title>
 <style>
 /* ===== Brand tokens (JCPOS, defined here, not imported) ===== */
 :root{
-  --bg:#F7F6F2; --bg2:#FFFFFF; --card:#FFFFFF; --card2:#F1EFE8;
-  --ink:#17180F; --mut:#8C887E; --faint:#A8A399; --bdr:#E7E3D9; --bdr2:#DBD6CA;
-  --acc:#1B6B4F; --acc-ink:#FFFFFF; --acc-soft:rgba(27,107,79,.10);
-  --good:#1B6B4F; --good-soft:rgba(27,107,79,.10);
-  --warn:#9A6B12; --warn-soft:rgba(154,107,18,.12);
-  --bad:#B23B30; --bad-soft:rgba(178,59,48,.10);
+  --bg:#121410; --bg2:#191C16; --card:#191C16; --card2:#20241C;
+  --ink:#EFEDE4; --mut:#9AA093; --faint:#6E7468; --bdr:#262A23; --bdr2:#323730;
+  --acc:#4FB58A; --acc-ink:#10120D; --acc-soft:rgba(79,181,138,.14);
+  --good:#4FB58A; --good-soft:rgba(79,181,138,.14);
+  --warn:#D9A441; --warn-soft:rgba(217,164,65,.15);
+  --bad:#E5675C; --bad-soft:rgba(229,103,92,.15);
   --r-sm:12px; --r-md:16px; --r-lg:22px;
   --sp-1:4px; --sp-2:8px; --sp-3:12px; --sp-4:16px; --sp-5:24px; --sp-6:32px;
   --sh-sm:none;
-  --sh-md:0 12px 34px rgba(23,24,15,.14);
+  --sh-md:0 14px 40px rgba(0,0,0,.5);
   --nav-h:66px;
   --maxw:560px;
   font-synthesis:none;
@@ -223,15 +223,15 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .seg{background:var(--card);border:1px solid var(--bdr)}
 .seg button.on{background:var(--card2);color:var(--ink);box-shadow:none}
 .tile{border-radius:16px}
-.tile.live{border-color:rgba(27,107,79,.32)}
+.tile.live{border-color:rgba(79,181,138,.35)}
 .tile .tico{color:var(--ink)} .tile.live .tico{color:var(--acc)} .tile .tico svg{width:24px;height:24px}
 .tile .tsub{font-weight:700;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .tsoon{background:var(--card2)}
 
-.nav{background:rgba(247,246,242,.85);backdrop-filter:saturate(120%) blur(14px);-webkit-backdrop-filter:saturate(120%) blur(14px);border-top:1px solid var(--bdr)}
+.nav{background:rgba(18,20,16,.86);backdrop-filter:saturate(120%) blur(14px);-webkit-backdrop-filter:saturate(120%) blur(14px);border-top:1px solid var(--bdr)}
 .nav button{color:var(--faint);gap:4px;font-size:10.5px}
 .nav button .ni{display:flex} .nav button .ni svg{width:22px;height:22px}
-.nav .fab b{background:var(--acc);color:var(--acc-ink);margin-top:-20px;box-shadow:0 10px 24px rgba(27,107,79,.32)}
+.nav .fab b{background:var(--acc);color:var(--acc-ink);margin-top:-20px;box-shadow:0 8px 22px rgba(0,0,0,.55)}
 .nav .fab b svg{width:26px;height:26px}
 
 .scrim{background:rgba(0,0,0,.62)}
@@ -246,10 +246,33 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .hstrip .hv{font-family:'Fraunces',Georgia,serif;font-weight:500;letter-spacing:0}
 .stat .val{font-family:'Fraunces',Georgia,serif;font-weight:500;letter-spacing:0}
 
-/* the travel fund hero, a quiet sage card in editorial */
-.card.hero{background:#ECF2EE;border-color:#D7E6DC}
-.card.hero .bar{background:rgba(27,107,79,.14)}
+/* the travel fund hero, a dark green tinted panel */
+.card.hero{background:#16241D;border-color:#24463A}
+.card.hero .bar{background:rgba(79,181,138,.18)}
 .card.hero .bar>i{background:var(--acc)}
+
+/* command center: the goal ring on home */
+.ringwrap{display:flex;flex-direction:column;align-items:center;margin:10px 0 24px;cursor:pointer}
+.ringwrap:active{opacity:.85}
+.ring{width:206px;height:206px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+.ring .ring-inner{width:168px;height:168px;border-radius:50%;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.ring .reye{font-size:11px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase}
+.ring .rval{font-family:'Fraunces',Georgia,serif;font-weight:500;font-size:38px;letter-spacing:-.02em;color:var(--ink);line-height:1}
+.ring .rof{font-size:12px;color:var(--mut)}
+.ringnote{margin-top:15px;font-size:13.5px;font-weight:600;text-align:center;color:var(--mut)}
+.ringnote.good{color:var(--good)} .ringnote.warn{color:var(--warn)} .ringnote.bad{color:var(--bad)}
+
+/* command center: the system as prioritised rows */
+.rows{margin-top:2px}
+.row-item{display:flex;align-items:center;gap:13px;padding:15px 4px;border-top:1px solid var(--bdr);width:100%;text-align:left;color:var(--ink)}
+.row-item:first-child{border-top:none}
+.row-item:active{opacity:.6}
+.row-item .ri-ico{width:24px;height:24px;color:var(--acc);flex:0 0 auto;display:flex}
+.row-item .ri-ico svg{width:22px;height:22px}
+.row-item .ri-nm{flex:1;font-weight:600;font-size:15.5px}
+.row-item .ri-val{font-size:14px;color:var(--mut);font-weight:600;white-space:nowrap}
+.row-item .ri-val.good{color:var(--good)} .row-item .ri-val.warn{color:var(--warn)} .row-item .ri-val.bad{color:var(--bad)}
+.row-item .ri-chev{color:var(--faint);font-size:20px;line-height:1;margin-left:2px}
 
 /* habits */
 .habrow{display:flex;flex-wrap:wrap;gap:8px}
@@ -626,6 +649,15 @@ const Finance = {
     Store.upsert('transactions',{id:uid(),kind:'variable',category_id:categoryId,
       amount_pence:Math.abs(pence),note:note||(c?c.name:''),occurred_at:nowISO()});
   },
+  /* a one off income for a single month (a bonus, gift or side payment). Not a recurring template,
+     so it is never auto posted or duplicated. It lifts the balance, surplus and travel fund for its month. */
+  addIncome(pence,note,occurredISO){
+    Store.upsert('transactions',{id:uid(),kind:'income',
+      amount_pence:Math.abs(pence),note:note||'One off income',occurred_at:occurredISO||nowISO()});
+  },
+  /* manually added income (no recurring template behind it), newest first */
+  oneOffIncomes(){ return this.txns().filter(t=>t.kind==='income'&&!t.source_recurring_id)
+    .slice().sort((a,b)=>new Date(b.occurred_at)-new Date(a.occurred_at)); },
 
   /* ---- spine contract ---- */
   getSummary(){
@@ -1013,28 +1045,63 @@ function viewHome(v){
       el('button',{class:'btn acc',style:'margin-top:10px',onclick:()=>{App.moneyTab='setup';App.go('money');}},'Set up money')));
   }
 
+  // the goal ring leads: the one number that matters most
+  if(Finance.balance()!=null || Finance.travelTarget()>0){
+    v.append(ringHero());
+  }
+
   // one Today card for the daily inputs: habits then how was today
   v.append(todayCard());
 
-  // the one featured card: the travel fund
-  if(Finance.balance()!=null || Finance.travelTarget()>0){
-    const fin=Modules.find(m=>m.id==='finance'); const fc=fin.getSummary();
-    if(fc.length) v.append(moduleCard(fin,fc));
-  }
-
-  // the whole system at a glance, each live tile showing its key number
+  // the whole system as prioritised rows, each showing its key number
   v.append(el('div',{class:'sec-h'},'Your system'));
-  const grid=el('div',{class:'tiles'});
+  const rows=el('div',{class:'rows'});
   SECTIONS.forEach(sec=>{
-    const stat = sec.live ? statFor(sec) : null;
-    const tile=el('button',{class:'tile'+(sec.live?' live':'')},
-      el('span',{class:'tico',html:svgIcon(sec.icon,24)}),
-      el('span',{class:'tnm'},sec.label),
-      sec.live?el('span',{class:'tsub'},stat||'Active'):el('span',{class:'tsoon'},'Soon'));
-    tile.addEventListener('click',()=> sec.live&&sec.route?App.go(sec.route):soonSheet(sec));
-    grid.append(tile);
+    const live=sec.live;
+    const stat = live ? (statFor(sec)||'Active') : 'Soon';
+    let scls='';
+    if(live && sec.id==='reviews' && !Reviews.doneThisWeek()) scls='warn';
+    const valEl=el('span',{class:'ri-val '+scls},stat);
+    if(!live) valEl.style.color='var(--faint)';
+    const row=el('button',{class:'row-item'},
+      el('span',{class:'ri-ico',html:svgIcon(sec.icon,22)}),
+      el('span',{class:'ri-nm'},sec.label),
+      valEl,
+      el('span',{class:'ri-chev'},'›'));
+    row.addEventListener('click',()=> live&&sec.route?App.go(sec.route):soonSheet(sec));
+    rows.append(row);
   });
-  v.append(grid);
+  v.append(rows);
+}
+function ringHero(){
+  const target=Finance.travelTarget();
+  const wrap=el('div',{class:'ringwrap'});
+  if(target>0){
+    const saved=Finance.savedForTravel(), on=Finance.onTrack();
+    const pct=Math.max(0,Math.min(100,Math.round(saved/target*100)));
+    const col=on?'var(--acc)':'var(--warn)';
+    wrap.append(el('div',{class:'ring',style:'background:conic-gradient('+col+' '+pct+'%, var(--bdr) 0)'},
+      el('div',{class:'ring-inner'},
+        el('div',{class:'reye'},'January'),
+        el('div',{class:'rval tnum'},fmtP0(saved)),
+        el('div',{class:'rof tnum'},'of '+fmtP0(target)))));
+    const ml=Finance.monthsLeft();
+    const note = !Finance.hasStarted()
+      ? ('Starts '+Finance.travelStart().toLocaleDateString('en-GB',{day:'numeric',month:'long'}))
+      : on ? ('On track · '+ml+' month'+(ml===1?'':'s')+' to go')
+      : ('Behind · '+fmtP0(Finance.requiredPerMonth())+' a month needed');
+    wrap.append(el('div',{class:'ringnote '+(on?'good':'warn')},note));
+  } else {
+    const bal=Finance.balance()||0;
+    wrap.append(el('div',{class:'ring',style:'background:conic-gradient(var(--acc) 100%, var(--bdr) 0)'},
+      el('div',{class:'ring-inner'},
+        el('div',{class:'reye'},'Balance'),
+        el('div',{class:'rval tnum'},fmtP0(bal)),
+        el('div',{class:'rof tnum'},'in the bank'))));
+    wrap.append(el('div',{class:'ringnote good'},'Spent '+fmtP0(Finance.spentThisPeriod())+' this cycle'));
+  }
+  wrap.addEventListener('click',()=>App.go('money'));
+  return wrap;
 }
 function todayCard(){
   const card=el('div',{class:'card'}, el('h2',{},'Today'));
@@ -1665,6 +1732,9 @@ function viewFinance(v){
   );
   v.append(tm);
 
+  v.append(el('div',{class:'row',style:'margin:-2px 0 2px'},
+    el('button',{class:'btn ghost',onclick:openIncome},'+ Add one off income')));
+
   const hist=Finance.monthHistory();
   if(hist.length){
     const hc=el('div',{class:'card'}, el('h2',{},'Banked each month'));
@@ -1703,6 +1773,30 @@ function confirmDelete(t){
     s.append(el('button',{class:'btn ghost',style:'margin-top:8px',onclick:closeSheet},'Keep'));
   });
 }
+/* add a one off income, dated into whichever pay cycle the user picks */
+function openIncome(){
+  const start=Finance.travelStart();
+  const def = new Date() >= start ? new Date() : start;
+  openSheet('Add one off income', s=>{
+    s.append(field2('Amount (£)','oi-amt','','number'));
+    s.append(field2('What is it for','oi-note','Bonus'));
+    const dateInput=el('input',{id:'oi-date',type:'date',value:ymd(def)});
+    s.append(el('div',{class:'field'}, el('label',{},'Date received'), dateInput));
+    const cyc=el('p',{class:'muted',style:'margin:-6px 0 14px'});
+    const setCyc=()=>{ const dv=dateInput.value; const d=dv?new Date(dv+'T12:00:00'):def;
+      cyc.textContent='Counts in your '+Finance.periodLabel(Finance.periodOf(d))+' pay cycle.'; };
+    s.append(cyc); setCyc();
+    dateInput.addEventListener('change',setCyc);
+    s.append(el('button',{class:'btn acc',onclick:()=>{
+      const amt=toPence($('#oi-amt').value), note=$('#oi-note').value.trim();
+      const dv=dateInput.value;
+      if(!amt||amt<=0){ toast('Enter an amount'); return; }
+      const occ = dv ? new Date(dv+'T12:00:00').toISOString() : nowISO();
+      Finance.addIncome(amt,note,occ);
+      closeSheet(); toast('Added '+fmtP(amt)); App.render();
+    }},'Add income'));
+  });
+}
 
 /* ---- STATS: spend by category this pay cycle ---- */
 function viewStats(v){
@@ -1731,6 +1825,9 @@ function viewSetup(v){
   const card=el('div',{class:'card'}, el('h2',{},'Your money'),
     field('Current bank balance (£)','su-bal',poundsVal(s.starting_balance_pence)),
     el('p',{class:'muted',style:'margin:-6px 0 14px'},'This anchors your running balance. Everything you log adjusts it from here.'),
+    el('div',{class:'field'}, el('label',{},'Tracking starts'),
+      el('input',{id:'su-start',type:'date',value:s.travel_start_date||'2026-07-01'})),
+    el('p',{class:'muted',style:'margin:-6px 0 14px'},'Your fresh start. The balance above is what you had on this date, and the travel fund counts everything saved from here.'),
     field('Monthly budget for variable spend (£)','su-bud',poundsVal(s.monthly_budget_pence)),
     el('button',{class:'btn acc',onclick:saveMoney},'Save')
   );
@@ -1765,6 +1862,27 @@ function viewSetup(v){
     el('button',{class:'btn ghost',onclick:()=>addRecurring('income')},'+ Income'),
     el('button',{class:'btn ghost',onclick:()=>addRecurring('fixed_cost')},'+ Fixed cost')));
   v.append(recCard);
+
+  // one off income (manual, not recurring)
+  const oneOffs=Finance.oneOffIncomes();
+  const ooCard=el('div',{class:'card'}, el('h2',{},'One off income'),
+    el('p',{class:'muted',style:'margin:-2px 0 12px'},'Bonuses, gifts or any income that only lands once. It counts in the month you date it.'));
+  if(!oneOffs.length) ooCard.append(el('div',{class:'empty'},'Nothing added yet.'));
+  else{
+    const OL=el('div',{class:'list'});
+    oneOffs.forEach(t=>{
+      OL.append(el('div',{class:'item'},
+        el('div',{class:'ico'},'⬆️'),
+        el('div',{class:'meta'}, el('div',{class:'t'},t.note||'One off income'), el('div',{class:'s'},dayLabel(t.occurred_at))),
+        el('div',{class:'amt tnum in'},'+'+fmtP(Math.abs(t.amount_pence))),
+        el('button',{class:'btn sm ghost',onclick:()=>{Store.remove('transactions',t.id);App.render();}},'✕')
+      ));
+    });
+    ooCard.append(OL);
+  }
+  ooCard.append(el('div',{class:'row',style:'margin-top:14px'},
+    el('button',{class:'btn ghost',onclick:openIncome},'+ Add one off income')));
+  v.append(ooCard);
 
   // categories
   const catCard=el('div',{class:'card'}, el('h2',{},'Spend categories'),
@@ -1804,11 +1922,11 @@ function saveMoney(){
   const g=id=>{const e=$('#'+id);return e?e.value:undefined;};
   const bal=toPence(g('su-bal')), bud=toPence(g('su-bud')), tgt=toPence(g('su-tgt')), date=g('su-date');
   const s=Finance.settings();
-  // tracking begins at the next payday so each cycle starts with pay landing
-  const startDate = s.travel_start_date || ymd(Finance.nextPayday());
+  // tracking begins on the chosen start date (defaults to 1 July 2026); the balance is anchored there
+  const startDate = g('su-start') || s.travel_start_date || '2026-07-01';
   Finance.saveSettings({
     starting_balance_pence: bal!=null?bal:s.starting_balance_pence,
-    balance_anchored_at: s.balance_anchored_at || (startDate+'T00:00:00'),
+    balance_anchored_at: startDate+'T00:00:00',
     monthly_budget_pence: bud!=null?bud:(s.monthly_budget_pence||0),
     travel_target_pence: tgt!=null?tgt:s.travel_target_pence,
     travel_target_date: date||s.travel_target_date||'2027-01-01',
