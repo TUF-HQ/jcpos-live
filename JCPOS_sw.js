@@ -1,6 +1,6 @@
 /* JCPOS service worker: cache the app shell so it opens offline.
    Network first for the HTML so updates land; cache first for the rest. */
-const CACHE = 'jcpos-v5';
+const CACHE = 'jcpos-v6';
 const SHELL = [
   'index.html',
   'JCPOS_manifest.webmanifest',
