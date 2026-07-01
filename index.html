@@ -218,7 +218,9 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .chip{border-radius:999px}
 .cat.sel .nm{color:var(--ink)}
 .amount.zero{color:var(--faint)}
-.weekrow .wd{background:var(--card2);border-radius:12px}
+.weekrow .wd{background:var(--card2);border-radius:12px;cursor:pointer}
+.weekrow .wd:active{transform:translateY(1px)}
+.weekrow .wd.fut{opacity:.4;pointer-events:none}
 
 .seg{background:var(--card);border:1px solid var(--bdr)}
 .seg button.on{background:var(--card2);color:var(--ink);box-shadow:none}
@@ -294,9 +296,12 @@ input::placeholder,textarea::placeholder{color:var(--faint)}
 .habchip.on .hck{width:16px;margin-right:6px}
 .tickbtn{width:30px;height:30px;flex:0 0 auto;margin-top:1px;border-radius:50%;border:1.8px solid var(--bdr2);display:flex;align-items:center;justify-content:center;color:var(--acc-ink);background:transparent}
 .tickbtn.on{background:var(--acc);border-color:transparent} .tickbtn svg{width:18px;height:18px}
-.hgrid{display:flex;gap:5px;margin-top:9px}
-.hgrid .hgd{flex:1;height:7px;border-radius:3px;background:var(--card2);border:1px solid var(--bdr)}
-.hgrid .hgd.on{background:var(--acc);border-color:transparent}
+.hgrid{display:flex;gap:6px;margin-top:10px}
+.hgrid .hgd{flex:1;height:28px;border-radius:8px;background:var(--card2);border:1px solid var(--bdr);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--faint);padding:0}
+.hgrid .hgd.on{background:var(--acc);border-color:transparent;color:var(--acc-ink)}
+.hgrid .hgd.today{border-color:var(--acc)}
+.hgrid .hgd.fut{opacity:.35}
+.hgrid .hgd:active{transform:translateY(1px)}
 
 /* journal */
 .moodrow{display:flex;gap:7px;margin-top:4px}
@@ -655,10 +660,10 @@ const Finance = {
     }
   },
 
-  logSpend(categoryId,pence,note){
+  logSpend(categoryId,pence,note,occurredISO){
     const c=Store.get('categories',categoryId);
     Store.upsert('transactions',{id:uid(),kind:'variable',category_id:categoryId,
-      amount_pence:Math.abs(pence),note:note||(c?c.name:''),occurred_at:nowISO()});
+      amount_pence:Math.abs(pence),note:note||(c?c.name:''),occurred_at:occurredISO||nowISO()});
   },
   /* a one off income for a single month (a bonus, gift or side payment). Not a recurring template,
      so it is never auto posted or duplicated. It lifts the balance, surplus and travel fund for its month. */
@@ -885,7 +890,7 @@ const Goals = {
   addGoal(g){ const n=this.all().length; Store.upsert('goals',Object.assign({id:uid(),status:'active',sort_order:n,archived:false},g)); },
   saveGoal(id,patch){ Store.upsert('goals',Object.assign({id},patch)); },
   checkins(goalId){ return Store.all('goal_checkins').filter(c=>c.goal_id===goalId).sort((a,b)=>new Date(a.checked_at)-new Date(b.checked_at)); },
-  checkIn(goalId,value,note){ Store.upsert('goal_checkins',{id:uid(),goal_id:goalId,value:Number(value),note:note||'',checked_at:nowISO()}); },
+  checkIn(goalId,value,note,checkedISO){ Store.upsert('goal_checkins',{id:uid(),goal_id:goalId,value:Number(value),note:note||'',checked_at:checkedISO||nowISO()}); },
   currentValue(g){ const c=this.checkins(g.id); return c.length?c[c.length-1].value:null; },
   progressPct(g){ const c=this.checkins(g.id); const t=g.signal_target; if(t==null||!c.length)return 0;
     const cur=c[c.length-1].value, start=c[0].value;
@@ -935,7 +940,7 @@ const Learning = {
   addBook(b){ const n=this.books().length; Store.upsert('books',Object.assign({id:uid(),status:'reading',sort_order:n,archived:false},b)); },
   saveBook(id,patch){ Store.upsert('books',Object.assign({id},patch)); },
   learnings(){ return Store.all('learnings').filter(l=>!l.archived).sort((a,b)=>a.learned_at<b.learned_at?1:-1); },
-  addLearning(text,source){ const n=Store.all('learnings').length; Store.upsert('learnings',{id:uid(),text,source:source||'',learned_at:ymd(new Date()),sort_order:n,archived:false}); },
+  addLearning(text,source,dateStr){ const n=Store.all('learnings').length; Store.upsert('learnings',{id:uid(),text,source:source||'',learned_at:dateStr||ymd(new Date()),sort_order:n,archived:false}); },
   weekLearnings(start,end){ return this.learnings().filter(l=>{const d=new Date(l.learned_at+'T00:00:00');return d>=start&&d<end;}); },
   booksFinished(start,end){ return this.books().filter(b=>b.status==='read'&&b.finished_at).filter(b=>{const d=new Date(b.finished_at+'T00:00:00');return d>=start&&d<end;}); },
 
@@ -1326,11 +1331,13 @@ function viewGoals(v){
 }
 function checkInSheet(g){
   openSheet('Check in · '+g.title, s=>{
+    const d=dateField('Date', ymd(new Date())); s.append(d.wrap);
     s.append(field2('Current '+(g.signal_label||'value')+(g.signal_unit?(' ('+g.signal_unit+')'):''),'ci-val','','number'));
     s.append(field2('Note (optional)','ci-note',''));
     s.append(el('button',{class:'btn acc',onclick:()=>{
       const val=parseFloat($('#ci-val').value); if(isNaN(val)){toast('Enter a value');return;}
-      Goals.checkIn(g.id,val,$('#ci-note').value.trim()); closeSheet(); toast('Checked in'); App.render();
+      const occ=d.input.value?new Date(d.input.value+'T12:00:00').toISOString():nowISO();
+      Goals.checkIn(g.id,val,$('#ci-note').value.trim(),occ); closeSheet(); toast('Checked in'); App.render();
     }},'Save check in'));
   });
 }
@@ -1425,9 +1432,12 @@ function viewHabits(v){
   const days=['M','T','W','T','F','S','S']; const ws=Habits.weekStart();
   const L=el('div',{class:'list'});
   list.forEach(h=>{ const on=Habits.doneToday(h), streak=Habits.streak(h), wc=Habits.weekCount(h);
-    const grid=el('div',{class:'hgrid'});
-    for(let i=0;i<7;i++){ const dd=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate()+i); const hit=Habits.doneOn(h.id,ymd(dd));
-      grid.append(el('span',{class:'hgd'+(hit?' on':'')})); }
+    const grid=el('div',{class:'hgrid'}); const todayStr=ymd(new Date());
+    for(let i=0;i<7;i++){ const dd=new Date(ws.getFullYear(),ws.getMonth(),ws.getDate()+i); const ds=ymd(dd);
+      const hit=Habits.doneOn(h.id,ds); const fut=ds>todayStr;
+      const cell=el('button',{class:'hgd'+(hit?' on':'')+(ds===todayStr?' today':'')+(fut?' fut':''),title:days[i]},days[i]);
+      if(!fut) cell.addEventListener('click',()=>{ Habits.toggle(h.id,ds); App.render(); });
+      grid.append(cell); }
     const item=el('div',{class:'item',style:'align-items:flex-start'},
       el('button',{class:'tickbtn'+(on?' on':''),html:on?svgIcon('check',18):'',onclick:()=>{Habits.toggle(h.id);App.render();}}),
       el('div',{class:'meta'},
@@ -1507,10 +1517,12 @@ function bookSheet(b){
   });
 }
 function viewLearnings(v){
+  const dl=dateField('Date', ymd(new Date()));
   v.append(el('div',{class:'card'}, el('h2',{},'Capture a learning'),
     el('div',{class:'field'}, el('textarea',{id:'ln-text',rows:'2',placeholder:'Something you learned'})),
     field2('Source (optional)','ln-source',''),
-    el('button',{class:'btn acc',onclick:()=>{ const t=$('#ln-text').value.trim(); if(!t){toast('Write a learning');return;} Learning.addLearning(t,$('#ln-source').value.trim()); toast('Saved'); App.render(); }},'Save learning')));
+    dl.wrap,
+    el('button',{class:'btn acc',onclick:()=>{ const t=$('#ln-text').value.trim(); if(!t){toast('Write a learning');return;} Learning.addLearning(t,$('#ln-source').value.trim(), dl.input.value||undefined); toast('Saved'); App.render(); }},'Save learning')));
   const list=Learning.learnings();
   const card=el('div',{class:'card'}, el('h2',{},'Recent learnings'));
   if(!list.length) card.append(el('div',{class:'empty'},'Nothing captured yet.'));
@@ -1647,10 +1659,12 @@ function viewHealthSessions(v){
     el('div',{class:'muted',style:'margin-top:-4px'},'sessions done'));
   if(tgt){ const bar=el('div',{class:'bar',style:'margin-top:12px'}); const i=el('i'); i.style.width=Math.min(100,Math.round(done/tgt*100))+'%'; if(done>=tgt)i.style.background='var(--good)'; bar.append(i); wk.append(bar); }
   const {start}=Health.weekRange(); const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const row=el('div',{class:'weekrow'});
+  const row=el('div',{class:'weekrow'}); const todayStr=ymd(new Date());
   for(let i=0;i<7;i++){ const dd=new Date(start.getFullYear(),start.getMonth(),start.getDate()+i); const ds=ymd(dd);
-    const did=Health.workouts().some(w=>w.on_date===ds); const rest=Health.isRest(Health.schedule()[i]);
-    row.append(el('div',{class:'wd'+(did?' done':'')}, el('span',{class:'wl'},days[i]), el('span',{class:'wdot'}, did?'✓':(rest?'·':'○'))));
+    const w=Health.workouts().find(x=>x.on_date===ds); const rest=Health.isRest(Health.schedule()[i]); const fut=ds>todayStr;
+    const cell=el('div',{class:'wd'+(w?' done':'')+(fut?' fut':'')}, el('span',{class:'wl'},days[i]), el('span',{class:'wdot'}, w?'✓':(rest?'·':'○')));
+    if(!fut) cell.addEventListener('click',()=> w?workoutSheet(w):logWorkoutSheet('', ds));
+    row.append(cell);
   }
   wk.append(row); v.append(wk);
 
@@ -1663,17 +1677,14 @@ function viewHealthSessions(v){
     el('div',{class:'meta'}, el('div',{class:'t'},w.session||'Session'),
       el('div',{class:'s'}, relDay(w.on_date)+(w.note?(' · '+w.note):'')+(w.effort?(' · '+w.effort+'/5'):''))),
     el('div',{class:'s'}, w.source==='hevy'?'Hevy':''));
-    item.addEventListener('click',()=>openSheet(w.session||'Session', s=>{
-      s.append(el('p',{class:'muted'},(w.session||'Session')+' · '+relDay(w.on_date)));
-      s.append(el('button',{class:'btn',style:'background:var(--bad)',onclick:()=>{Store.remove('workouts',w.id);closeSheet();toast('Removed');App.render();}},'Remove'));
-      s.append(el('button',{class:'btn ghost',style:'margin-top:8px',onclick:closeSheet},'Close'));
-    }));
+    item.addEventListener('click',()=>workoutSheet(w));
     L.append(item); });
   if(ws.length) rc.append(L);
   v.append(rc);
 }
-function logWorkoutSheet(session){
+function logWorkoutSheet(session,dateStr){
   openSheet('Log a session', s=>{
+    const d=dateField('Date', dateStr||ymd(new Date())); s.append(d.wrap);
     s.append(field2('Session','wk-session',session||''));
     s.append(field2('Note (optional)','wk-note',''));
     const effWrap=el('div',{class:'field'}, el('label',{},'How it went (optional)'));
@@ -1681,9 +1692,16 @@ function logWorkoutSheet(session){
     [1,2,3,4,5].forEach(n=>{ const b=el('button',{class:'chip',onclick:()=>{chosen=n;$$('.chip',eff).forEach(x=>x.classList.remove('on'));b.classList.add('on');}},String(n)); eff.append(b); });
     effWrap.append(eff); s.append(effWrap);
     s.append(el('button',{class:'btn acc',onclick:()=>{
-      Health.logWorkout(ymd(new Date()), $('#wk-session').value.trim(), $('#wk-note').value.trim(), chosen||null);
+      Health.logWorkout(d.input.value||ymd(new Date()), $('#wk-session').value.trim(), $('#wk-note').value.trim(), chosen||null);
       closeSheet(); toast('Logged'); App.render();
     }},'Save session'));
+  });
+}
+function workoutSheet(w){
+  openSheet(w.session||'Session', s=>{
+    s.append(el('p',{class:'muted'},(w.session||'Session')+' · '+relDay(w.on_date)+(w.note?(' · '+w.note):'')+(w.effort?(' · '+w.effort+'/5'):'')));
+    s.append(el('button',{class:'btn',style:'background:var(--bad)',onclick:()=>{Store.remove('workouts',w.id);closeSheet();toast('Removed');App.render();}},'Remove'));
+    s.append(el('button',{class:'btn ghost',style:'margin-top:8px',onclick:closeSheet},'Close'));
   });
 }
 function viewHealthWeight(v){
@@ -1875,10 +1893,10 @@ function viewSetup(v){
   const poundsVal=p=> p==null?'':(p/100).toFixed(2);
   const card=el('div',{class:'card'}, el('h2',{},'Your money'),
     field('Current bank balance (£)','su-bal',poundsVal(s.starting_balance_pence)),
-    el('p',{class:'muted',style:'margin:-6px 0 14px'},'This anchors your running balance. Everything you log adjusts it from here.'),
-    el('div',{class:'field'}, el('label',{},'Tracking starts'),
-      el('input',{id:'su-start',type:'date',value:s.travel_start_date||'2026-07-01'})),
-    el('p',{class:'muted',style:'margin:-6px 0 14px'},'Your fresh start. The balance above is what you had on this date, and the travel fund counts everything saved from here.'),
+    el('p',{class:'muted',style:'margin:-6px 0 14px'},'Your balance as it is today. Everything you log adjusts it from here.'),
+    el('div',{class:'field'}, el('label',{},'Savings tracked from'),
+      el('input',{id:'su-start',type:'date',value:s.travel_start_date||ymd(Finance.currentPeriod().start)})),
+    el('p',{class:'muted',style:'margin:-6px 0 14px'},'The day your pay lands, so this month counts. Your travel fund is everything you do not spend from here.'),
     field('Monthly budget for variable spend (£)','su-bud',poundsVal(s.monthly_budget_pence)),
     el('button',{class:'btn acc',onclick:saveMoney},'Save')
   );
@@ -1973,11 +1991,13 @@ function saveMoney(){
   const g=id=>{const e=$('#'+id);return e?e.value:undefined;};
   const bal=toPence(g('su-bal')), bud=toPence(g('su-bud')), tgt=toPence(g('su-tgt')), date=g('su-date');
   const s=Finance.settings();
-  // tracking begins on the chosen start date (defaults to 1 July 2026); the balance is anchored there
-  const startDate = g('su-start') || s.travel_start_date || '2026-07-01';
+  // savings count from the payday that opened the current cycle (default); the bank balance is a separate number, anchored to today
+  const startDate = g('su-start') || s.travel_start_date || ymd(Finance.currentPeriod().start);
+  const balChanged = bal!=null && bal!==s.starting_balance_pence;
+  const anchor = balChanged ? nowISO() : (s.balance_anchored_at || nowISO());
   Finance.saveSettings({
     starting_balance_pence: bal!=null?bal:s.starting_balance_pence,
-    balance_anchored_at: startDate+'T00:00:00',
+    balance_anchored_at: anchor,
     monthly_budget_pence: bud!=null?bud:(s.monthly_budget_pence||0),
     travel_target_pence: tgt!=null?tgt:s.travel_target_pence,
     travel_target_date: date||s.travel_target_date||'2027-01-01',
@@ -2012,12 +2032,14 @@ function addRecurring(kind){
   });
 }
 function field2(label,id,val,type){ return el('div',{class:'field'}, el('label',{},label), el('input',{id,type:type||'text',inputmode:type==='number'?'decimal':'text',value:val||''})); }
+/* a date picker field for backdating an entry; returns the wrap plus the input so callers read input.value */
+function dateField(label,def){ const input=el('input',{type:'date',value:def||ymd(new Date()),max:ymd(new Date())}); return {wrap:el('div',{class:'field'}, el('label',{},label||'Date'), input), input}; }
 
 /* ---- FAST LOGGER (the make or break screen) ---- */
 let logState={cat:null,pence:0};
 function openLogger(){
   if(!Finance.cats().length){ toast('Add categories in Setup'); return; }
-  logState={cat:Finance.cats()[0].id,pence:0};
+  logState={cat:Finance.cats()[0].id,pence:0,date:ymd(new Date())};
   openSheet('Log a spend', s=>{
     const cats=el('div',{class:'cats'});
     Finance.cats().forEach(c=>{
@@ -2032,6 +2054,7 @@ function openLogger(){
     [500,1000,2000,5000].forEach(p=>chips.append(el('button',{class:'chip',onclick:()=>{logState.pence=p;paintAmt(amt);}},fmtP0(p))));
     s.append(chips);
     const note=el('div',{class:'notewrap'},el('input',{id:'log-note',placeholder:'Note (optional)',type:'text'})); s.append(note);
+    const dwrap=dateField('Date', logState.date); dwrap.input.addEventListener('change',()=>{logState.date=dwrap.input.value;}); s.append(dwrap.wrap);
     const pad=el('div',{class:'keypad'});
     ['1','2','3','4','5','6','7','8','9','C','0','⌫'].forEach(k=>{
       pad.append(el('button',{class:'key',onclick:()=>{ press(k); paintAmt(amt); }},k));
@@ -2052,7 +2075,8 @@ function saveLog(){
   if(logState.pence<=0){ toast('Enter an amount'); return; }
   if(!logState.cat){ toast('Pick a category'); return; }
   const note=$('#log-note')?$('#log-note').value.trim():'';
-  Finance.logSpend(logState.cat,logState.pence,note);
+  const occ = logState.date ? new Date(logState.date+'T12:00:00').toISOString() : nowISO();
+  Finance.logSpend(logState.cat,logState.pence,note,occ);
   closeSheet(); toast('Logged '+fmtP(logState.pence)); App.render();
 }
 
