@@ -590,7 +590,10 @@ const Finance = {
   monthlyIncome(){ return Store.all('recurring_items').filter(r=>r.kind==='income'&&r.active!==false).reduce((a,r)=>a+Math.abs(r.amount_pence),0); },
   monthlyFixed(){ return Store.all('recurring_items').filter(r=>r.kind==='fixed_cost'&&r.active!==false).reduce((a,r)=>a+Math.abs(r.amount_pence),0); },
   plannedMonthlySaving(){ return this.monthlyIncome() - this.monthlyFixed() - this.budget(); },
-  travelStart(){ const s=this.settings(); return s.travel_start_date ? new Date(s.travel_start_date+'T00:00:00') : this.nextPayday(); },
+  travelStart(){ const s=this.settings(); const def=this.currentPeriod().start;
+    if(!s.travel_start_date) return def;
+    const d=new Date(s.travel_start_date+'T00:00:00');
+    return d>new Date() ? def : d; },
   travelTargetDate(){ const s=this.settings(); return s.travel_target_date ? new Date(s.travel_target_date+'T00:00:00') : new Date(2027,0,1); },
   travelTarget(){ return this.settings().travel_target_pence||0; },
   hasStarted(){ return new Date() >= this.travelStart(); },
@@ -1895,7 +1898,7 @@ function viewSetup(v){
     field('Current bank balance (£)','su-bal',poundsVal(s.starting_balance_pence)),
     el('p',{class:'muted',style:'margin:-6px 0 14px'},'Your balance as it is today. Everything you log adjusts it from here.'),
     el('div',{class:'field'}, el('label',{},'Savings tracked from'),
-      el('input',{id:'su-start',type:'date',value:s.travel_start_date||ymd(Finance.currentPeriod().start)})),
+      el('input',{id:'su-start',type:'date',value:ymd(Finance.travelStart())})),
     el('p',{class:'muted',style:'margin:-6px 0 14px'},'The day your pay lands, so this month counts. Your travel fund is everything you do not spend from here.'),
     field('Monthly budget for variable spend (£)','su-bud',poundsVal(s.monthly_budget_pence)),
     el('button',{class:'btn acc',onclick:saveMoney},'Save')
