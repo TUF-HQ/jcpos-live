@@ -1895,8 +1895,8 @@ function viewSetup(v){
   const s=Finance.settings();
   const poundsVal=p=> p==null?'':(p/100).toFixed(2);
   const card=el('div',{class:'card'}, el('h2',{},'Your money'),
-    field('Current bank balance (£)','su-bal',poundsVal(s.starting_balance_pence)),
-    el('p',{class:'muted',style:'margin:-6px 0 14px'},'Your balance as it is today. Everything you log adjusts it from here.'),
+    field('Bank balance at the start (£)','su-bal',poundsVal(s.starting_balance_pence)),
+    el('p',{class:'muted',style:'margin:-6px 0 14px'},'What your account held on the start date below, before this month pay landed. Your income then adds and your spending subtracts, and your net worth moves with it.'),
     el('div',{class:'field'}, el('label',{},'Savings tracked from'),
       el('input',{id:'su-start',type:'date',value:ymd(Finance.travelStart())})),
     el('p',{class:'muted',style:'margin:-6px 0 14px'},'The day your pay lands, so this month counts. Your travel fund is everything you do not spend from here.'),
@@ -1994,13 +1994,12 @@ function saveMoney(){
   const g=id=>{const e=$('#'+id);return e?e.value:undefined;};
   const bal=toPence(g('su-bal')), bud=toPence(g('su-bud')), tgt=toPence(g('su-tgt')), date=g('su-date');
   const s=Finance.settings();
-  // savings count from the payday that opened the current cycle (default); the bank balance is a separate number, anchored to today
+  // everything (bank balance AND travel fund) flows from the start date: the starting balance is what you had then,
+  // and income adds while fixed costs and spend subtract, so net worth tracks your cash flow
   const startDate = g('su-start') || s.travel_start_date || ymd(Finance.currentPeriod().start);
-  const balChanged = bal!=null && bal!==s.starting_balance_pence;
-  const anchor = balChanged ? nowISO() : (s.balance_anchored_at || nowISO());
   Finance.saveSettings({
     starting_balance_pence: bal!=null?bal:s.starting_balance_pence,
-    balance_anchored_at: anchor,
+    balance_anchored_at: startDate+'T00:00:00',
     monthly_budget_pence: bud!=null?bud:(s.monthly_budget_pence||0),
     travel_target_pence: tgt!=null?tgt:s.travel_target_pence,
     travel_target_date: date||s.travel_target_date||'2027-01-01',
