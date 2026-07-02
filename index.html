@@ -579,10 +579,10 @@ const Finance = {
   savedThisPeriod(p=this.currentPeriod()){ return this.txns().filter(t=>this.inPeriod(t.occurred_at,p)).reduce((a,t)=>a+this.signed(t),0); },
   incomeThisPeriod(p=this.currentPeriod()){ return this.txns().filter(t=>t.kind==='income'&&this.inPeriod(t.occurred_at,p)).reduce((a,t)=>a+t.amount_pence,0); },
   fixedThisPeriod(p=this.currentPeriod()){ return this.txns().filter(t=>t.kind==='fixed_cost'&&this.inPeriod(t.occurred_at,p)).reduce((a,t)=>a+Math.abs(t.amount_pence),0); },
-  balance(){ const s=this.settings(); if(s.starting_balance_pence==null||!s.balance_anchored_at) return null;
+  balance(){ const s=this.settings(); if(!s.balance_anchored_at) return null;
     const anchor=new Date(s.balance_anchored_at);
     const since=this.txns().filter(t=>new Date(t.occurred_at)>=anchor).reduce((a,t)=>a+this.signed(t),0);
-    return s.starting_balance_pence + since; },
+    return (s.starting_balance_pence||0) + since; },
   budget(){ return this.settings().monthly_budget_pence||0; },
   leftThisPeriod(){ return this.budget() - this.spentThisPeriod(); },
 
